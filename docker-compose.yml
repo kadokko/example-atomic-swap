@@ -1,0 +1,89 @@
+version: '3'
+
+services:
+
+  elements1:
+    build:
+      context: ./container/elements
+      args:
+        - ELEMENTS_VER
+        - ELEMENTS_MODE
+        - ELEMENTS_CONF_DIR
+        - CONFIGURE_OPT
+    image: elements:${ELEMENTS_VER}
+    container_name: elements1
+    hostname: elements1
+    ports:
+      - "18443:18443"
+    volumes:
+      - ./container/elements/conf:/conf
+      - ./container/elements/script:/script
+    networks:
+      - regtest-network
+    command: >
+      /bin/bash -c "/script/start-issuer.sh /script/env.${ELEMENTS_VER}"
+
+  elements2:
+    build:
+      context: ./container/elements
+      args:
+        - ELEMENTS_VER
+        - ELEMENTS_MODE
+        - ELEMENTS_CONF_DIR
+        - CONFIGURE_OPT
+    image: elements:${ELEMENTS_VER}
+    container_name: elements2
+    hostname: elements2
+    ports:
+      - "18543:18443"
+    volumes:
+      - ./container/elements/conf:/conf
+      - ./container/elements/script:/script
+    networks:
+      - regtest-network
+    command: >
+      /bin/bash -c "/script/start-user.sh /script/env.${ELEMENTS_VER}"
+
+  elements3:
+    build:
+      context: ./container/elements
+      args:
+        - ELEMENTS_VER
+        - ELEMENTS_MODE
+        - ELEMENTS_CONF_DIR
+        - CONFIGURE_OPT
+    image: elements:${ELEMENTS_VER}
+    container_name: elements3
+    hostname: elements3
+    ports:
+      - "18643:18443"
+    volumes:
+      - ./container/elements/conf:/conf
+      - ./container/elements/script:/script
+    networks:
+      - regtest-network
+    command: >
+      /bin/bash -c "/script/start-user.sh /script/env.${ELEMENTS_VER}"
+
+  jupyter:
+    build:
+      context: ./container/jupyter
+    image: jupyter
+    container_name: jupyter
+    hostname: jupyter
+    ports:
+      - "8888:8888"
+    networks:
+      - regtest-network
+    volumes:
+      - ./notebook:/notebook
+    command: >
+      /bin/bash -c "
+        . ~/miniconda/etc/profile.d/conda.sh &&
+        conda activate `cat .envname` &&
+        conda info -e &&
+        jupyter notebook"
+
+networks:
+  regtest-network:
+    external: true
